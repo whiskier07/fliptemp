@@ -85,6 +85,15 @@ enum class InterpolationMode
     CubicBezier = 2,  // CSS cubic-bezier (Config.h kTimelineBezier*)
 };
 
+// Decoupled display-slot phase during smooth-scroll list wrap (uDWM cycle card).
+enum class CarouselWrapPhase
+{
+    None          = 0,
+    ExitingFront  = 1,  // slot → [-1, 0]   front fade-out (forward scroll)
+    EnteringBack  = 2,  // opacity slot span→listSlot; position stays on list slot
+    EnteringFront = 3,  // slot → [-1, 0]   front fade-in (backward scroll)
+};
+
 // Flip3D view state machine (uDWM CFlip3D::Flip3DState ordering preserved)
 enum class ViewState
 {

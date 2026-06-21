@@ -163,12 +163,20 @@ private:
     void    RotateToWindow(HWND targetHwnd);
     float   ComputeScrollTargetForCard(int listIndex) const;
     float   CardListSlot(int listIndex) const;
+    float   CaptureCarouselVisualSlot(int listIndex) const;
     float   GetCardDisplaySlot(int listIndex) const;
     void    InvalidateDisplaySlots();
     void    SyncDisplaySlotsToList();
-    void    AdvanceExitingDisplaySlots(float deltaScrollPos);
+    void    AdvanceWrapDisplaySlots(float deltaScrollPos);
+    void    FinishWrapPhase(CardModel& card, int listIndex);
+    void    BeginEnteringBackWrap(CardModel& card, int listIndex);
+    void    StepEnteringBackWrap(CardModel& card, int listIndex);
+    void    FreezeCarouselVisuals();
+    void    UpdateVisualSlots(float enterProgress);
+    void    SettleWrapDisplaySlots();
     void    OnCarouselWrapForward(HWND outgoingHwnd, float outgoingSlot);
-    void    OnCarouselWrapBackward();
+    void    OnCarouselWrapBackward(HWND incomingHwnd);
+    float   CarouselEdgeSpan() const;
     void    WrapCarouselScroll();
     void    RotateSelectedToListFront();
     void    AlignCarouselScrollSettled();
@@ -279,6 +287,10 @@ private:
     // ---- Smooth carousel scroll ----
     float                   m_scrollPos     = 0.0f;
     float                   m_scrollTarget  = 0.0f;
+    float                   m_wrapScrollAdjustThisFrame = 0.0f;
+
+    // Frozen browse scroll at exit start; held constant during ExitRepeatedRotate
+    float                   m_exitScrollSnapshot    = 0.0f;
 
     // ---- Discrete list rotation (uDWM m_ptlRotateListTimeline) ----
     Timeline                m_rotateTimeline;

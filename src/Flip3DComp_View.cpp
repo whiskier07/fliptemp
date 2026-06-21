@@ -101,23 +101,17 @@ void Flip3DCompApp::SelectWindow(HWND hwndTarget)
     m_selectedHwnd = hwndTarget;
     m_lastPaintOrder.clear();
 
-    WrapCarouselScroll();
-    m_scrollPos    = 0.0f;
-    m_scrollTarget = 0.0f;
-    InvalidateDisplaySlots();
+    FreezeCarouselVisuals();
 
     BeginExitView();
 
-    if (m_cards[0].m_hwnd != hwndTarget)
+    // Re-index after wrap may have rotated the list; step count = list index of selection.
+    const int selIdxAfter = FindCardIndex(hwndTarget);
+    if (selIdxAfter > 0)
     {
-        const size_t targetPos = (size_t)selIdx;
-        const int dist = DistanceBetween(0, targetPos, true);
-        if (dist > 0)
-        {
-            m_rRepeatedRotateRate = -(kExitDurationSec / (float)dist);
-            m_state = ViewState::ExitRepeatedRotate;
-            TickRepeatedRotate();
-        }
+        m_rRepeatedRotateRate = -(kExitDurationSec / (float)selIdxAfter);
+        m_state = ViewState::ExitRepeatedRotate;
+        TickRepeatedRotate();
     }
 }
 

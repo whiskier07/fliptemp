@@ -173,8 +173,11 @@ float ResolveRotationPathSlot(const CardRotationEntry& entry, const RotationCont
         {
             if (p < 0.5f)
                 return (1.0f - p * 2.0f) * 0.0f + (p * 2.0f) * -1.0f;
-            return ((p - 0.5f) * 2.0f) * (float)ctx.visibleCount
-                 + (1.0f - (p - 0.5f) * 2.0f) * (float)(ctx.visibleCount - 1);
+            {
+                const float phase = (p - 0.5f) * 2.0f;
+                return (1.0f - phase) * (float)ctx.visibleCount
+                     + phase * (float)(ctx.visibleCount - 1);
+            }
         }
         if (p < 0.5f)
             return ((1.0f - p * 2.0f) * (float)(ctx.visibleCount - 1))
@@ -303,7 +306,7 @@ float Flip3DCompApp::RotationDurationForRotateList() const
 
 void Flip3DCompApp::StartRotationStep(bool backward, float durationSec)
 {
-    m_rotateBackward = backward;
+    m_rotateBackward             = backward;
     m_showOutgoingDuringRotation = true;
     m_rotateTimeline.Restart(0.0f, 1.0f, durationSec, InterpolationMode::Linear);
 }
@@ -329,10 +332,19 @@ void Flip3DCompApp::TickRepeatedRotate()
             constexpr bool backward = false;
             RotateListPhysically(backward);
             StartRotationStep(backward, RotationDurationForRotateList());
+
+            for (int k = 0; k < (int)m_cards.size(); ++k)
+            {
+                m_cards[(size_t)k].m_displaySlot =
+                    ComputeRotationDisplaySlot(k);
+            }
         }
         else
         {
             m_rRepeatedRotateRate = 0.0f;
+            m_exitScrollSnapshot  = 0.0f;
+            m_scrollPos           = 0.0f;
+            m_scrollTarget        = 0.0f;
         }
         return;
     }
@@ -349,7 +361,10 @@ float Flip3DCompApp::ComputeRotationDisplaySlot(int listIndex) const
         return CardListSlot(listIndex);
 
     const CardRotationEntry entry = BuildCardRotationEntry(listIndex, ctx);
-    return ResolveRotationPathSlot(entry, ctx);
+    const float scrollOffset = (m_state == ViewState::ExitRepeatedRotate)
+        ? m_exitScrollSnapshot
+        : m_scrollPos;
+    return ResolveRotationPathSlot(entry, ctx) - scrollOffset;
 }
 
 bool Flip3DCompApp::ShouldDrawRotationCard(int listIndex) const

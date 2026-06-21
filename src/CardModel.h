@@ -50,5 +50,6 @@ struct CardModel
     // while a card completes the front-edge opacity ramp (slot in [-1, 0]).
     float               m_displaySlot     = 0.0f;
     bool                m_displaySlotValid = false;
-    bool                m_exitingFront  = false;
+    CarouselWrapPhase   m_wrapPhase     = CarouselWrapPhase::None;
+    float               m_wrapFadeStartListSlot = 0.0f; // list slot when EnteringBack began
 };
